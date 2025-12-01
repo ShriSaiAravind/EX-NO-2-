@@ -34,10 +34,93 @@ STEP-5: Display the obtained cipher text.
 
 
 
-Program:
+## Program:
+```
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
+char M[5][5];
 
+void makeMatrix(char key[]) {
+    int used[26]={0}, k=0; char t[25];
+    for(int i=0; key[i]; i++){
+        char c=toupper(key[i]); if(c=='J') c='I';
+        if(isalpha(c) && !used[c-'A']) t[k++]=c, used[c-'A']=1;
+    }
+    for(char c='A'; c<='Z'; c++){
+        if(c=='J') continue;
+        if(!used[c-'A']) t[k++]=c;
+    }
+    k=0;
+    for(int i=0;i<5;i++) for(int j=0;j<5;j++) M[i][j]=t[k++];
+}
 
+void pos(char c, int*r,int*c2){
+    if(c=='J') c='I';
+    for(int i=0;i<5;i++) for(int j=0;j<5;j++)
+        if(M[i][j]==c){*r=i;*c2=j;return;}
+}
 
+void prep(char s[],char o[]){
+    int k=0;
+    for(int i=0; s[i]; ){
+        char a=toupper(s[i]); if(!isalpha(a)){i++; continue;}
+        char b='X'; int j=i+1;
+        while(s[j] && !isalpha(s[j])) j++;
+        if(s[j]){b=toupper(s[j]); if(b=='J') b='I';}
+        if(a=='J') a='I';
+        if(a==b) o[k++]=a, o[k++]='X', i++;
+        else     o[k++]=a, o[k++]=b, i=j+1;
+    }
+    o[k]=0;
+}
 
-Output:
+void crypt(char in[], char out[], int dec){
+    int k=0;
+    for(int i=0; in[i]; i+=2){
+        int r1,c1,r2,c2;
+        pos(in[i],&r1,&c1); pos(in[i+1],&r2,&c2);
+        if(r1==r2){
+            out[k++]=M[r1][(c1+5+(dec?-1:1))%5];
+            out[k++]=M[r2][(c2+5+(dec?-1:1))%5];
+        } else if(c1==c2){
+            out[k++]=M[(r1+5+(dec?-1:1))%5][c1];
+            out[k++]=M[(r2+5+(dec?-1:1))%5][c2];
+        } else {
+            out[k++]=M[r1][c2];
+            out[k++]=M[r2][c1];
+        }
+    }
+    out[k]=0;
+}
+
+int main(){
+    char key[100], plain[200];
+    char prepared[300], enc[300], dec[300];
+
+    printf("Enter key: ");
+    scanf("%s", key);
+
+    printf("Enter plaintext: ");
+    scanf("%s", plain);
+
+    makeMatrix(key);
+    prep(plain, prepared);
+    crypt(prepared, enc, 0);
+    crypt(enc, dec, 1);
+
+    printf("\nPrepared:  %s", prepared);
+    printf("\nEncrypted: %s", enc);
+    printf("\nDecrypted: %s\n", dec);
+
+    return 0;
+}
+
+```
+
+## Output:
+<img width="1620" height="551" alt="image" src="https://github.com/user-attachments/assets/42796019-aa93-4d6d-a299-89a9b5d7f98e" />
+
+## Result:
+Thus the C program to implement the Playfair Substitution technique was completed and successfully executed.
